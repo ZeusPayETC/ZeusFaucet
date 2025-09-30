@@ -1,0 +1,19 @@
+{
+  "name": "zeus-faucet",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.3.24",
+    "vercel": "^48.1.6"
+  }
+}

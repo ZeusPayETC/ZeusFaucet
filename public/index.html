@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ZEUS Token Faucet</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin: 50px; }
+    input { padding: 10px; width: 300px; }
+    button { padding: 10px; background: #0070f3; color: white; border: none; }
+  </style>
+</head>
+<body>
+  <h1>ZEUS Token Faucet</h1>
+  <p>Enter your ETC address to receive test ZEUS tokens:</p>
+  <input type="text" id="address" placeholder="0x..." />
+  <button onclick="requestTokens()">Get Tokens</button>
+  <p id="message"></p>
+
+  <script>
+    async function requestTokens() {
+      const address = document.getElementById('address').value;
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Processing...';
+
+      try {
+        const res = await fetch('/api/faucet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address })
+        });
+        const data = await res.json();
+        messageEl.textContent = data.message;
+      } catch (error) {
+        messageEl.textContent = 'Error: Try again later.';
+      }
+    }
+  </script>
+</body>
+</html>
