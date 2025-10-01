@@ -24,14 +24,7 @@
       "dest": "/public/$1" 
     }
   ],
-  "functions": {
-    "api/faucet.js": {
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  },
   "env": {
     "NODE_ENV": "production"
-  },
-  "framework": null
+  }
 }
