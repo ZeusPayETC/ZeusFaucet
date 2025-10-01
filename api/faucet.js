@@ -2,7 +2,7 @@ const { ethers } = require('ethers');
 const kv = require('@vercel/kv');
 
 const COOLDOWN_PERIOD = 24 * 60 * 60; // 24 hours in seconds
-const RPC_URL = 'https://www.ethercluster.com/etc';
+const RPC_URL = 'https://etc.rivet.link';
 const CHAIN_ID = 61;
 const PRIVATE_KEY = process.env.FAUCET_PRIVATE_KEY;
 const TOKEN_ADDRESS = '0x66e97838A985cf070B9F955c4025f1C7825de44F';
