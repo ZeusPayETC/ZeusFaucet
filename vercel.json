@@ -1,11 +1,37 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/faucet.js", "use": "@vercel/node" },
-    { "src": "public/**/*", "use": "@vercel/static" }
+    { 
+      "src": "api/**/*.js", 
+      "use": "@vercel/node" 
+    },
+    { 
+      "src": "public/**/*", 
+      "use": "@vercel/static" 
+    }
   ],
   "routes": [
-    { "src": "/", "dest": "/public/index.html" },
-    { "src": "/api/faucet", "dest": "/api/faucet.js" }
-  ]
+    { 
+      "src": "/", 
+      "dest": "/public/index.html" 
+    },
+    { 
+      "src": "/api/(.*)", 
+      "dest": "/api/$1" 
+    },
+    { 
+      "src": "/(.*)", 
+      "dest": "/public/$1" 
+    }
+  ],
+  "functions": {
+    "api/faucet.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "framework": null
 }

@@ -1,19 +1,20 @@
 {
   "name": "zeus-faucet",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "ZEUS Token Faucet for Ethereum Classic",
+  "main": "api/faucet.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "ethers": "^5.7.2"
   },
   "devDependencies": {
-    "@vercel/node": "^5.3.24",
-    "vercel": "^48.1.6"
+    "vercel": "^28.16.0",
+    "@vercel/node": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
