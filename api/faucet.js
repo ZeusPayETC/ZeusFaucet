@@ -1,108 +1,145 @@
-const { ethers } = require('ethers');
-const kv = require('@vercel/kv');
+const { ethers } = require("ethers");
+const { getClient } = require("./redisClient");
+const fetch = require("node-fetch");
 
-const COOLDOWN_PERIOD = 24 * 60 * 60; // 24 hours in seconds
-const RPC_URL = 'https://etc.rivet.link';
+const COOLDOWN_PERIOD = 24 * 60 * 60; // 24 hours
+const RPC_URL = "https://etc.rivet.link";
 const CHAIN_ID = 61;
 const PRIVATE_KEY = process.env.FAUCET_PRIVATE_KEY;
-const TOKEN_ADDRESS = '0x66e97838A985cf070B9F955c4025f1C7825de44F';
+const TOKEN_ADDRESS = "0x66e97838A985cf070B9F955c4025f1C7825de44F";
 
 const TOKEN_ABI = [
-  'function transfer(address to, uint256 amount) returns (bool)'
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)"
 ];
 
-function getClientIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0] || 
-         req.headers['x-real-ip'] || 
-         req.connection.remoteAddress;
+// ✅ Telegram alert helper
+async function sendTelegramMessage(text) {
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) return; // skip silently if not configured
+
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+    });
+  } catch (err) {
+    console.error("Telegram alert failed:", err);
+  }
 }
 
-async function checkRateLimit(ip, address) {
+// ✅ Extract client IP
+function getClientIP(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.headers["x-real-ip"] ||
+    req.connection.remoteAddress
+  );
+}
+
+// ✅ Add CORS headers
+function setCORS(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+}
+
+// ✅ Check rate limit
+async function checkRateLimit(redis, ip, address) {
   const now = Math.floor(Date.now() / 1000);
   const ipKey = `faucet:ip:${ip}`;
-  const addressKey = `faucet:addr:${address.toLowerCase()}`;
-  
-  // Check IP limit
-  const ipLastRequest = await kv.get(ipKey);
-  if (ipLastRequest && (now - ipLastRequest) < COOLDOWN_PERIOD) {
-    return { allowed: false, reason: 'IP address has already requested tokens recently' };
+  const addrKey = `faucet:addr:${address.toLowerCase()}`;
+
+  const ipLast = await redis.get(ipKey);
+  if (ipLast && now - ipLast < COOLDOWN_PERIOD) {
+    return { allowed: false, reason: "IP address has already requested tokens recently" };
   }
-  
-  // Check address limit
-  const addrLastRequest = await kv.get(addressKey);
-  if (addrLastRequest && (now - addrLastRequest) < COOLDOWN_PERIOD) {
-    return { allowed: false, reason: 'Wallet address has already received tokens recently' };
+
+  const addrLast = await redis.get(addrKey);
+  if (addrLast && now - addrLast < COOLDOWN_PERIOD) {
+    return { allowed: false, reason: "Wallet address has already received tokens recently" };
   }
-  
+
   return { allowed: true };
 }
 
 module.exports = async (req, res) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-  
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  setCORS(res);
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
   const { address } = req.body;
-  
-  if (!address) {
-    return res.status(400).json({ message: 'Address is required' });
-  }
-  
-  if (!ethers.utils.isAddress(address)) {
-    return res.status(400).json({ message: 'Invalid Ethereum address' });
-  }
+  if (!address) return res.status(400).json({ message: "Address is required" });
+  if (!ethers.utils.isAddress(address)) return res.status(400).json({ message: "Invalid address" });
 
   try {
+    const redis = await getClient();
     const clientIP = getClientIP(req);
-    
-    // Check rate limits
-    const rateLimitCheck = await checkRateLimit(clientIP, address);
-    if (!rateLimitCheck.allowed) {
-      return res.status(429).json({ message: rateLimitCheck.reason });
+
+    // ✅ Rate limit enforcement
+    const check = await checkRateLimit(redis, clientIP, address);
+    if (!check.allowed) {
+      return res.status(429).json({ message: check.reason });
     }
 
-    // Initialize blockchain connection
+    // ✅ Connect to blockchain
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL, CHAIN_ID);
     const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-    const tokenContract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, wallet);
+    const token = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, wallet);
 
-    // Send tokens
-    const amount = ethers.utils.parseUnits('50000', 18);
-    const tx = await tokenContract.transfer(address, amount);
+    const amount = ethers.utils.parseUnits("50000", 18);
+    const tx = await token.transfer(address, amount);
 
-    // Update rate limiting in KV store
+    // ✅ Save timestamps
     const now = Math.floor(Date.now() / 1000);
-    await kv.set(`faucet:ip:${clientIP}`, now, { ex: COOLDOWN_PERIOD });
-    await kv.set(`faucet:addr:${address.toLowerCase()}`, now, { ex: COOLDOWN_PERIOD });
+    await redis.set(`faucet:ip:${clientIP}`, now, { EX: COOLDOWN_PERIOD });
+    await redis.set(`faucet:addr:${address.toLowerCase()}`, now, { EX: COOLDOWN_PERIOD });
 
-    res.status(200).json({ 
-      message: `Tokens sent! Transaction: https://blockscout.com/etc/mainnet/tx/${tx.hash}`,
-      transactionHash: tx.hash
+    // ✅ Update counters
+    await redis.incr("faucet:totalClaims");
+    await redis.incr("faucet:dailyClaims");
+
+    const lastReset = await redis.get("faucet:lastReset");
+    if (!lastReset || now - lastReset > COOLDOWN_PERIOD) {
+      await redis.set("faucet:lastReset", now);
+      await redis.set("faucet:dailyClaims", 0);
+    }
+
+    // ✅ Remaining balance
+    const decimals = await token.decimals();
+    const balance = await token.balanceOf(await wallet.getAddress());
+    const remaining = parseFloat(ethers.utils.formatUnits(balance, decimals)).toFixed(2);
+
+    // ✅ Truncate user address for privacy
+    const truncated = `${address.slice(0, 6)}...${address.slice(-4)}`;
+
+    // ✅ Send Telegram alert
+    await sendTelegramMessage(
+      `💧 *50,000 ZEUS Claimed!*\n\n` +
+      `👤 *User:* \`${truncated}\`\n` +
+      `🔗 [View Transaction](https://blockscout.com/etc/mainnet/tx/${tx.hash})\n\n` +
+      `🏦 *Remaining Faucet Balance:* ${remaining} ZEUS`
+    );
+
+    // ✅ Respond success
+    res.status(200).json({
+      message: "Tokens sent successfully!",
+      transactionHash: tx.hash,
     });
-    
   } catch (error) {
-    console.error('Faucet error:', error);
-    
-    // Handle specific errors
-    if (error.code === 'INSUFFICIENT_FUNDS') {
-      return res.status(500).json({ message: 'Faucet out of gas funds. Please try again later.' });
-    } else if (error.reason?.includes('transfer amount exceeds balance')) {
-      return res.status(500).json({ message: 'Faucet out of ZEUS tokens. Please try again later.' });
-    } else if (error.message?.includes('Unexpected token')) {
-      return res.status(500).json({ message: 'Service temporarily unavailable. Please try again later.' });
+    console.error("Faucet error:", error);
+
+    if (error.code === "INSUFFICIENT_FUNDS") {
+      res.status(500).json({ message: "Faucet is out of gas funds. Please try again later." });
+    } else if (error.reason?.includes("transfer amount exceeds balance")) {
+      res.status(500).json({ message: "Faucet is out of ZEUS tokens. Please try again later." });
     } else {
-      return res.status(500).json({ message: 'Internal server error. Please try again later.' });
+      res.status(500).json({ message: "Internal server error. Please try again later." });
     }
   }
 };

@@ -1,28 +1,16 @@
 {
   "version": 2,
-  "builds": [
-    { 
-      "src": "api/**/*.js", 
-      "use": "@vercel/node" 
-    },
-    { 
-      "src": "public/**/*", 
-      "use": "@vercel/static" 
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node@2.0.0"
     }
-  ],
+  },
   "routes": [
-    { 
-      "src": "/", 
-      "dest": "/public/index.html" 
-    },
-    { 
-      "src": "/api/(.*)", 
-      "dest": "/api/$1" 
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "/public/$1" 
-    }
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/dist/$1" }
   ],
   "env": {
     "NODE_ENV": "production"

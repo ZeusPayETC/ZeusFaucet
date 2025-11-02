@@ -4,15 +4,29 @@
   "description": "ZEUS Token Faucet for Ethereum Classic",
   "main": "api/faucet.js",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite preview",
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "ethers": "^5.7.2"
+    "@vercel/kv": "^3.0.0",
+    "ethers": "^5.7.2",
+    "lucide-react": "^0.446.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-toastify": "^10.0.5",
+    "redis": "^5.8.3"
   },
   "devDependencies": {
+    "@vercel/node": "^2.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.4",
     "vercel": "^28.16.0",
-    "@vercel/node": "^2.0.0"
+    "vite": "^5.3.1"
   },
   "engines": {
     "node": ">=18.x"

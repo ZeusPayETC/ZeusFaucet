@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Force full-screen layout and prevent white space */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* ✅ Prevent bottom scrolling / white space */
+}
+
+/* --- Custom Global Styles --- */
+body {
+  @apply bg-black text-white antialiased; /* dark base, smooth fonts */
+  font-family: 'Arial', sans-serif;
+}
+
+/* Optional: style scrollbars for a glassy look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
