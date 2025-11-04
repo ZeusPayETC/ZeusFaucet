@@ -70,9 +70,9 @@ export default function App() {
   <div className="relative min-h-screen w-screen overflow-hidden bg-black">
   {/* FULLSCREEN BACKGROUND IMAGE - NOW USING background-image FOR GUARANTEED COVERAGE */}
   <div 
-    className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-    style={{ backgroundImage: "url('/zeus-faucet-poster-landscape.png')" }}
-  />
+  className="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
+  style={{ backgroundImage: "url('/zeus-faucet-poster-landscape.png')" }}
+></div>
 
   {/* DARK OVERLAY */}
   <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10" />
