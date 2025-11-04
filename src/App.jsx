@@ -67,11 +67,13 @@ export default function App() {
   }, [API_BASE]);
 
   return (
-  <div className="relative min-h-screen w-screen overflow-hidden bg-black">
+  <div className="relative w-screen h-screen overflow-hidden bg-black">
   {/* FULLSCREEN BACKGROUND IMAGE - NOW USING background-image FOR GUARANTEED COVERAGE */}
   <div 
   className="absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
-  style={{ backgroundImage: "url('/zeus-faucet-poster-landscape.png')" }}
+  style={{ backgroundImage: "url('/zeus-faucet-poster-landscape.png')",
+    backgroundColor: "red" // remove this once working
+   }}
 ></div>
 
   {/* DARK OVERLAY */}
