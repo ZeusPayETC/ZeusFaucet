@@ -3,6 +3,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,jsx,ts,tsx}", // scan all React source files
+    "./public/**/*.{png,jpg,svg}", // ✅ add this if not present
   ],
   theme: {
     extend: {
