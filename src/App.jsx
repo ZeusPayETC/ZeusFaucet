@@ -67,7 +67,7 @@ export default function App() {
   }, [API_BASE]);
 
   return (
-  <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black">
+  <div className="relative min-h-screen w-screen overflow-hidden bg-black">
   {/* FULLSCREEN BACKGROUND IMAGE - NOW USING background-image FOR GUARANTEED COVERAGE */}
   <div 
     className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
