@@ -76,8 +76,8 @@ export default function App() {
    }}
 ></div>
 
-  {/* DARK OVERLAY */}
-  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10" />
+  {/* DARK OVERLAY 
+  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10" /> */}
 
   {/* TOP LEFT BALANCE DISPLAY */}
   <div className="absolute top-5 left-5 z-20">
