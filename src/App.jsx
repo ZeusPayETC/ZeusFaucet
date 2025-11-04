@@ -72,7 +72,7 @@ export default function App() {
   <img
       src="/zeus-faucet-poster-landscape.png"
       alt="ZEUS Faucet Background"
-      className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
+      className="fixed inset-0 w-full h-full object-contain z-0 pointer-events-none"
     />
 
   {/* DARK OVERLAY 
