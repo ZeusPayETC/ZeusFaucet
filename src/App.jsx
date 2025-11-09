@@ -67,19 +67,19 @@ export default function App() {
   }, [API_BASE]);
 
   return (
-  <div className="relative min-h-screen w-screen overflow-hidden bg-black">
+  <div className="relative w-screen h-screen overflow-hidden bg-black font-sans text-white">
   {/* FULLSCREEN BACKGROUND IMAGE - NOW USING background-image FOR GUARANTEED COVERAGE */}
   <img
       src="/zeus-faucet-poster-landscape.png"
       alt="ZEUS Faucet Background"
-      className="fixed inset-0 w-full h-full object-contain z-0 pointer-events-none"
+      className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
     />
 
-  {/* DARK OVERLAY 
-  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10" /> */}
+  {/* DARK OVERLAY */}
+  <div className="absolute inset-0 z-10 flex flex-col justify-between"></div>
 
   {/* TOP LEFT BALANCE DISPLAY */}
-  <div className="absolute top-5 left-5 z-20">
+  <div className="flex justify-between p-5">
     <div className="bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-white/20 shadow-xl">
       <div className={`${zeusColorClass} font-semibold text-sm`}>
        💰 {zeusDisplay}
@@ -96,7 +96,7 @@ export default function App() {
   </div>
 
   {/* CLAIM BUTTON CENTERED BELOW BACKGROUND TEXT */}
-  <div className="absolute top-[52%] left-1/2 transform -translate-x-1/2 z-20">
+  <div className="flex justify-center mb-12">
     <div className="w-[min(90vw,420px)] px-4">
       <ClaimButton
         walletAddress={walletAddress}
